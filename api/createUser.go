@@ -7,12 +7,20 @@ import (
 
 func (cfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 
-	user := User{}
+	userStruct := User{}
 
 	decoder := json.NewDecoder(r.Body)
 
-	if err := decoder.Decode(&user); err != nil {
+	if err := decoder.Decode(&userStruct); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Problem")
+		return
 	}
 
+	user, err := cfg.queries.CreateUser(r.Context(), userStruct.Email)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Problem")
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, user)
 }

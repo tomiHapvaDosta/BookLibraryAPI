@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/tomiHapvaDosta/BookLibraryAPI/internal/database"
 )
 
@@ -15,6 +16,7 @@ type apiConfig struct {
 }
 
 func main() {
+	godotenv.Load()
 
 	dbURL := os.Getenv("DB_URL")
 
@@ -26,14 +28,22 @@ func main() {
 
 	dbQueries := database.New(db)
 
+	const port = "8080"
+
 	cfg := apiConfig{
 		queries: dbQueries,
 	}
 
 	mux := http.NewServeMux()
 
+	server := &http.Server{
+		Handler: mux,
+		Addr:    ":" + port,
+	}
+
 	mux.HandleFunc("POST /api/users", cfg.createUser)
 
+	log.Fatal(server.ListenAndServe())
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
